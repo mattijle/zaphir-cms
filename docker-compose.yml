@@ -1,0 +1,58 @@
+#  Run `docker-compose build` to build the images
+#  Run `docker-compose up` to run the containers
+
+version: '3.5'
+services:
+  mongo:
+    image: mongo
+    container_name: global-mongo-service
+    restart: unless-stopped
+    volumes:
+      - mongo_data:/data/configdb
+      - mongo_data:/data/db
+    expose:
+      - "27017"
+    networks:
+      - core_service_network
+  main:
+    container_name: main
+    command: npm run start:dev
+    build:
+      context: .
+      target: development
+    ports:
+      - 3000:3000
+      - 5858:5858
+    volumes:
+      - .:/app
+      - /app/node_modules
+    env_file:
+      - .env
+    depends_on:
+      - mongo
+    networks:
+      - core_service_network
+#  pages:
+#    container_name: pages
+#    command: npm run start:dev pages
+#    build:
+#      context: .
+#      target: development
+#    volumes:
+#      - .:/app
+#      - /app/node_modules
+#    env_file:
+#      - .env
+#    depends_on:
+#      - mongo
+#    networks:
+#      - core_service_network
+networks:
+  core_service_network:
+    driver: bridge
+    name: core_service_network
+volumes:
+  mongo_data:
+    name: global_mongo
+  cms_modules:
+    name: cms_modules
